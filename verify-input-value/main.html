@@ -7,8 +7,29 @@
       //
       // TODO: Implement this function.
       //
-      const makeInputVerifier = () => {
-        return () => {}
+
+      const makeInputVerifier = (min_, max_) => {
+        // Constraint min, max
+        if (min_ < max_) {
+          return verify;
+        } else {
+          return "ERROR";
+        }
+      }
+
+      const verify = (min_, max_, input) => {
+  
+        // Constraint input value as an Integer
+        if (input === parseInt(input, 10)) {
+          switch (true) {
+            case (input < min_):
+              return "Input is less than minimum value";
+            case (min_ <= input && input <= max_):
+              return "Input is in range";
+            case (max_ < input):
+              return "Input is more than maximum value";
+          } 
+        } else return "ERROR";
       }
     </script>
   </head>
@@ -111,7 +132,7 @@
 
         const verify = makeInputVerifier(minimum, maximum)
 
-        const actualOutput = typeof verify === "function" ? verify(input) : verify
+        const actualOutput = typeof verify === "function" ? verify(minimum, maximum, input) : verify
         row.children[5].innerText = actualOutput
 
         if (expectedOutput === actualOutput) {

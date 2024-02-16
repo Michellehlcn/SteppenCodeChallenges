@@ -13,3 +13,33 @@ insert into orders (order_id,customer_id,ordered_at) values (10248,3,'1996-07-04
 insert into products (product_id,name) values (11,'Rambutan'),(42,'The Matrix Reloaded'),(72,'Milk (2 litres)'),(14,'QZ-183'),(51,'Oak Plank (2m x 4m)'),(31,'Loot Crate'),(39,'F-111 Aardvark'),(49,'Fresh Air'),(71,'Bowler Hat'),(24,'12 month subscription'),(59,'Bunch of Roses') ;
 
 insert into order_line_items (order_line_item_id,order_id,product_id,unit_price,quantity) values (24601,10248,11,14,12),(24602,10248,42,9,10),(24603,10248,72,34,5),(24604,10249,14,18,9),(24605,10249,51,42,40),(24606,10253,31,10,20),(24607,10253,39,14,42),(24608,10253,49,16,40),(24609,10274,71,17,20),(24610,10274,72,27,7),(24611,10275,24,3,12),(24612,10275,59,44,6),(24613,10296,11,16,12),(24614,10296,51,13,30),(24615,10296,39,28,15),(24616,10275,72,3,3),(24617,10275,39,50,4),(24618,10275,11,4,5) ;
+
+
+-- ANSWER
+
+select  year, 
+		month,
+		customer_id,  
+		sum(total_order_value)  as total_monthly_order_value 
+from
+	(select 
+	    rank() over (partition by month order by customer_id asc) as rank,
+		month,
+		year,
+		customer_id,
+		(order_line_items.unit_price * order_line_items.quantity) AS total_order_value
+	 	
+	from order_line_items 
+	inner join 
+		(select 
+		orders.customer_id, orders.order_id, orders.ordered_at, 
+		extract(MONTH from orders.ordered_at) as month,
+		extract(YEAR from orders.ordered_at) as year
+		from customers 
+		inner join orders on orders.customer_id = customers.customer_id group by order_id) 
+	 as group_A
+	 on group_A.order_id = order_line_items.order_id
+	) as group_B
+where rank = 1
+group by  year, month, customer_id, rank
+order by year ,month ASC
